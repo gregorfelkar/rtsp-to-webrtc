@@ -1,14 +1,18 @@
-FROM golang:1.18
+FROM golang:1.24-alpine AS build
 
-WORKDIR /go/src/app
-COPY .  .
+WORKDIR /app
+COPY . .
 
-RUN go get -d -v ./...
-RUN go install -v ./...
-
-EXPOSE 8083
-
-ENV GO111MODULE=on
 ENV GIN_MODE=release
 
-CMD go run *.go
+RUN go mod download
+RUN go build -o /app/rtsp_to_webrtc
+
+FROM alpine:latest
+
+WORKDIR /app
+COPY --from=build /app/rtsp_to_webrtc .
+COPY --from=build /app/config.json .
+COPY --from=build /app/web /app/web
+
+CMD ["./rtsp_to_webrtc"]

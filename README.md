@@ -1,71 +1,147 @@
-# RTSPtoWebRTC
+# rtsp-to-webrtc
 
-RTSP Stream to WebBrowser over WebRTC based on Pion (full native! not using ffmpeg or gstreamer).
+![rtsp-to-webrtc image](doc/demo.png)
 
-**Note:** [RTSPtoWeb](https://github.com/deepch/RTSPtoWeb) is an improved service that provides the same functionality, an improved API, and supports even more protocols. *RTSPtoWeb is recommended over using this service.*
+Minimal latency, Go implementation of RTSP Stream to web browser over WebRTC based on Pion library (Full native! Whitout ffmpeg or gstreamer libraries).
 
+This project is a fork of [RTSPtoWebRTC](https://github.com/deepch/RTSPtoWebRTC) project with small changes.
 
-if you need RTSPtoWSMP4f use https://github.com/deepch/RTSPtoWSMP4f
+## Installation
 
-
-![RTSPtoWebRTC image](doc/demo4.png)
-
-### Download Source
-
-1. Download source
-   ```bash 
-   $ git clone https://github.com/deepch/RTSPtoWebRTC  
-   ```
-3. CD to Directory
-   ```bash
-    $ cd RTSPtoWebRTC/
-   ```
-4. Test Run
-   ```bash
-    $ GO111MODULE=on go run *.go
-   ```
-5. Open Browser
-    ```bash
-    open web browser http://127.0.0.1:8083 work chrome, safari, firefox
-    ```
+```bash
+$ git clone https://github.com/gregorfelkar/rtsp-to-webrtc.git
+$ cd rtsp-to-webrtc
+$ go mod download
+```
 
 ## Configuration
 
 ### Edit file config.json
 
-format:
+You can edit the config.json file to add your own streams in `streams` object. Each stream must have a unique name and a valid RTSP URL.
 
 ```bash
 {
   "server": {
-    "http_port": ":8083"
+    "http_port": ":8083",
+    "ice_servers": []
   },
   "streams": {
-    "demo1": {
-      "on_demand" : false,
-      "url": "rtsp://170.93.143.139/rtplive/470011e600ef003a004ee33696235daa"
+    "cam1": {
+      "on_demand": false,
+      "disable_audio": true,
+      "url": "rtsp://[ip]:[port]/[stream]"
     },
-    "demo2": {
-      "on_demand" : true,
-      "url": "rtsp://admin:admin123@10.128.18.224/mpeg4"
+    "camXY": {
+      "on_demand": false,
+      "disable_audio": false,
+      "url": "rtsp://[ip]:[port]/[stream]"
     },
-    "demo3": {
-      "on_demand" : false,
-      "url": "rtsp://170.93.143.139/rtplive/470011e600ef003a004ee33696235daa"
+    "front-door": {
+      "on_demand": true,
+      "disable_audio": true,
+      "url": "rtsp://[ip]:[port]/[stream]"
     }
   }
 }
 ```
 
-## Livestreams
+## Build and run
 
-Use option ``` "on_demand": false ``` otherwise you will get choppy jerky streams and performance issues when multiple clients connect. 
+#### Run development
+
+```bash
+$ go run *.go
+```
+
+#### Build and run locally
+
+```bash
+$ docker build -t rtsp-to-webrtc .
+$ ./rtsp-to-webrtc
+```
+
+#### Build and run in Docker
+
+```bash
+$ docker build -t rtsp-to-webrtc .
+$ docker run --name=rtsp-to-webrtc -d -p 8083:8083 rtsp-to-webrtc
+```
+
+## Web implementation example
+
+For a custom web implementation take a look at `web/static/js/app.js` and `web/templates/player.tmpl` files. Or try out minimal example below:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <video
+      id="video-container"
+      style="width: 640px; height: 480px;"
+      autoplay
+    ></video>
+    <script>
+      const id = "cam1";
+      const element = document.getElementById("video-container");
+
+      const stream = new MediaStream();
+      const webrtc = new RTCPeerConnection();
+
+      webrtc.onnegotiationneeded = async () => {
+        const offer = await webrtc.createOffer();
+        await webrtc.setLocalDescription(offer);
+
+        const data = new FormData();
+        data.append("data", btoa(webrtc.localDescription?.sdp ?? ""));
+
+        const offerResponse = await fetch(
+          `http://localhost:8083/stream/offer/${id}`,
+          {
+            method: "POST",
+            body: data,
+          }
+        );
+
+        const offerSdp = await offerResponse.text();
+
+        webrtc.setRemoteDescription(
+          new RTCSessionDescription({
+            type: "answer",
+            sdp: atob(offerSdp),
+          })
+        );
+      };
+
+      webrtc.ontrack = async (event) => {
+        stream.addTrack(event.track);
+        element.srcObject = stream;
+      };
+
+      webrtc.addTransceiver("video", {
+        direction: "recvonly",
+      });
+    </script>
+  </body>
+</html>
+```
+
+When running the project, the built-in preview example is available at:
+
+```bash
+$ open http://localhost:8083
+```
 
 ## Limitations
 
-Video Codecs Supported: H264
+Video Codecs Supported: `H264`
 
-Audio Codecs Supported: pcm alaw and pcm mulaw 
+Audio Codecs Supported: `pcm alaw`, `pcm mulaw`
 
 ## Team
 
@@ -73,17 +149,4 @@ Deepch - https://github.com/deepch streaming developer
 
 Dmitry - https://github.com/vdalex25 web developer
 
-Now test work on (chrome, safari, firefox) no MAC OS
-
-## Other Example
-
-Examples of working with video on golang
-
-- [RTSPtoWeb](https://github.com/deepch/RTSPtoWeb)
-- [RTSPtoWebRTC](https://github.com/deepch/RTSPtoWebRTC)
-- [RTSPtoWSMP4f](https://github.com/deepch/RTSPtoWSMP4f)
-- [RTSPtoImage](https://github.com/deepch/RTSPtoImage)
-- [RTSPtoHLS](https://github.com/deepch/RTSPtoHLS)
-- [RTSPtoHLSLL](https://github.com/deepch/RTSPtoHLSLL)
-
-[![paypal.me/AndreySemochkin](https://ionicabizau.github.io/badges/paypal.svg)](https://www.paypal.me/AndreySemochkin) - You can make one-time donations via PayPal. I'll probably buy a ~~coffee~~ tea. :tea:
+Gregor - https://github.com/gregorfelkar developer

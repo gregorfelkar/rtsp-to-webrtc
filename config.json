@@ -1,13 +1,13 @@
 {
   "server": {
     "http_port": ":8083",
-    "ice_servers": ["stun:stun.l.google.com:19302"]
+    "ice_servers": []
   },
   "streams": {
-    "H264_AAC": {
+    "cam1": {
       "on_demand": false,
       "disable_audio": true,
-      "url": "rtsp://admin:admin@176.117.205.3:5541/video1"
+      "url": "rtsp://176.139.87.16/axis-media/media.amp"
     }
   }
 }

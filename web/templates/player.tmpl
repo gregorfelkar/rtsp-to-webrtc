@@ -9,24 +9,24 @@
 <script src="../../static/js/adapter-latest.js"></script>
 
 <h2 align=center>
-    Play Stream {{ .suuid }}
+    Play Stream {{ .streamId }}
 </h2>
 <div class="container">
   <div class="row">
     <div class="col-3">
       <div class="list-group">
-  {{ range .suuidMap }}
+  {{ range .streamIdMap }}
     <a href="{{ . }}" id="{{ . }}" name="{{ . }}" class="list-group-item list-group-item-action">{{ . }}</a>
   {{ end }}
 </div>
     </div>
         <div class="col">
-            <input type="hidden" name="suuid" id="suuid" value="{{ .suuid }}">
+            <input type="hidden" name="streamId" id="streamId" value="{{ .streamId }}">
             <input type="hidden" name="port" id="port" value="{{ .port }}">
             <input type="hidden" id="localSessionDescription" readonly="true">
             <input type="hidden" id="remoteSessionDescription">
             <div id="remoteVideos">
-                <video style="width:600px" id="videoElem" autoplay muted controls></video>
+                <video style="width:600px" id="videoElem" autoplay muted></video>
             </div>
             <div id="div"></div>
         </div>
