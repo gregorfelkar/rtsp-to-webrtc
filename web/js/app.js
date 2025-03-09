@@ -22,7 +22,9 @@ pc.ontrack = function (event) {
   log(event.streams.length + " track is delivered");
 };
 
-pc.oniceconnectionstatechange = (e) => log(pc.iceConnectionState);
+pc.oniceconnectionstatechange = (e) => {
+  log(pc.iceConnectionState);
+};
 
 async function handleNegotiationNeededEvent() {
   let offer = await pc.createOffer();
@@ -44,7 +46,7 @@ function getCodecInfo() {
     } finally {
       $.each(data, function (index, value) {
         pc.addTransceiver(value.Type, {
-          direction: "sendrecv",
+          direction: "recvonly",
         });
       });
     }
