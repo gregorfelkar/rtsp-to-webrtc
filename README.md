@@ -35,12 +35,12 @@ You can edit the config.json file to add your own streams in `streams` object. E
     "camXY": {
       "on_demand": false,
       "disable_audio": false,
-      "url": "rtsp://[ip]:[port]/[stream]"
+      "url": "rtsp://[username]:[password]@[ip]:[port]/[stream]"
     },
-    "front-door": {
+    "custom-stream-name": {
       "on_demand": true,
       "disable_audio": true,
-      "url": "rtsp://[ip]:[port]/[stream]"
+      "url": "rtsp://[url]"
     }
   }
 }
@@ -66,6 +66,19 @@ $ ./rtsp-to-webrtc
 ```bash
 $ docker build -t rtsp-to-webrtc .
 $ docker run --name=rtsp-to-webrtc -d -p 8083:8083 rtsp-to-webrtc
+```
+
+## Docker compose
+
+```yml
+services:
+  rtsp-to-webrtc:
+    image: gregorfelkar/rtsp-to-webrtc
+    container_name: rtsp-to-webrtc
+    ports:
+      - "8083:8083"
+    volumes:
+      - ./[path-to-your-config]/config.json:/app/config.json
 ```
 
 ## Web implementation example
