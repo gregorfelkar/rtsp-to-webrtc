@@ -1,3 +1,6 @@
 .DS_Store
 .idea/
+bin/
+*.sh
+*.zip
 rtsp-to-webrtc
