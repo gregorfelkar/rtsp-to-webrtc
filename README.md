@@ -57,15 +57,15 @@ $ go run *.go
 #### Build and run locally
 
 ```bash
-$ docker build -t rtsp-to-webrtc .
+$ go build
 $ ./rtsp-to-webrtc
 ```
 
 #### Build and run in Docker
 
 ```bash
-$ docker build -t rtsp-to-webrtc .
-$ docker run --name=rtsp-to-webrtc -d -p 8083:8083 rtsp-to-webrtc
+$ docker build --platform linux/amd64 -t gregorfelkar/rtsp-to-webrtc .
+$ docker run -p 8083:8083 rtsp-to-webrtc
 ```
 
 ## Docker compose
